@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -55,16 +56,21 @@ public class RNFirebaseMessaging extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getToken(Promise promise) {
-    try {
-      String senderId = FirebaseApp.getInstance().getOptions().getGcmSenderId();
-      String token = FirebaseInstanceId
-        .getInstance()
-        .getToken(senderId, FirebaseMessaging.INSTANCE_ID_SCOPE);
-      promise.resolve(token);
-    } catch (Throwable e) {
-      e.printStackTrace();
-      promise.reject("messaging/fcm-token-error", e.getMessage());
-    }
+    AsyncTask.execute(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          String senderId = FirebaseApp.getInstance().getOptions().getGcmSenderId();
+          String token = FirebaseInstanceId
+                  .getInstance()
+                  .getToken(senderId, FirebaseMessaging.INSTANCE_ID_SCOPE);
+          promise.resolve(token);
+        } catch (Throwable e) {
+          e.printStackTrace();
+          promise.reject("messaging/fcm-token-error", e.getMessage());
+        }
+      }
+    });
   }
 
   @ReactMethod
